@@ -5,10 +5,12 @@ use crate::binding::{
 };
 use std::ffi::c_void;
 
+/// Blake2b Hashing Algorithm
 pub struct Blake2b {
     pub(crate) state: blake2b_state,
 }
 
+/// Blake2bBuilder, returns a configured Blake2b
 pub struct Blake2bBuilder {
     pub(crate) state: blake2b_state,
     pub(crate) param: blake2b_param,
@@ -17,6 +19,7 @@ pub struct Blake2bBuilder {
 }
 
 impl Blake2bBuilder {
+    /// Create a new instance of the Blake2bBuilder
     pub fn new(out_len: usize) -> Self {
         assert!(out_len >= 1 && out_len <= blake2b_constant_BLAKE2B_OUTBYTES as usize);
         let param = blake2b_param {
@@ -45,6 +48,7 @@ impl Blake2bBuilder {
         }
     }
 
+    /// Set salt in Blake2bBuilder
     pub fn salt(mut self, salt: &[u8]) -> Blake2bBuilder {
         let len = salt.len();
         assert!(len <= blake2b_constant_BLAKE2B_SALTBYTES as usize);
@@ -55,6 +59,7 @@ impl Blake2bBuilder {
         self
     }
 
+    /// Set personal bytes in Blake2bBuilder
     pub fn personal(mut self, personal: &[u8]) -> Blake2bBuilder {
         let len = personal.len();
         assert!(len <= blake2b_constant_BLAKE2B_PERSONALBYTES as usize);
@@ -69,6 +74,7 @@ impl Blake2bBuilder {
         self
     }
 
+    /// Set key in Blake2bBuilder
     pub fn key(mut self, key: &[u8]) -> Blake2bBuilder {
         let key_len = key.len();
         assert!(key_len <= blake2b_constant_BLAKE2B_KEYBYTES as usize);
@@ -81,6 +87,7 @@ impl Blake2bBuilder {
         self
     }
 
+    /// Build and return a Blake2b instance
     pub fn build(self) -> Blake2b {
         let Blake2bBuilder {
             mut state,
@@ -110,6 +117,7 @@ impl Blake2bBuilder {
 }
 
 impl Blake2b {
+    /// Set data to hash
     pub fn update(&mut self, data: &[u8]) {
         unsafe {
             blake2b_update(
@@ -120,6 +128,7 @@ impl Blake2b {
         }
     }
 
+    /// Hash data into dst
     pub fn finalize(mut self, dst: &mut [u8]) {
         unsafe {
             blake2b_final(
@@ -131,6 +140,8 @@ impl Blake2b {
     }
 }
 
+/// Wrapper function to hash blake2b
+/// Hash data into dst, based on key
 pub fn blake2b(key: &[u8], data: &[u8], dst: &mut [u8]) {
     let mut blake2b = Blake2bBuilder::new(dst.len()).key(key).build();
     blake2b.update(data);
